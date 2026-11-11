@@ -183,7 +183,7 @@ $('f').addEventListener('submit',function(e){
   body:JSON.stringify({name:d.name,email:d.email,phone:d.phone,payment_method:cur,transaction_id:d.trx,
   submitted_at:new Date().toLocaleString('en-US',{timeZone:'Asia/Dhaka'})})})
  .then(function(r){if(!r.ok)throw 0;
-  $('order-form').innerHTML='<div class="ok"><div class="t">🎉</div><h2 style="color:#0a9150">আপনার অর্ডারটি সফল হয়েছে!</h2><p style="color:#555">পেমেন্ট ভেরিফাই করে কিছুক্ষণের মধ্যেই আপনার জিমেইলে প্রিমিয়াম লিংক পাঠিয়ে দেওয়া হবে। ধন্যবাদ!</p></div>';
+  $('order-form').innerHTML='<div class="ok"><div class="t">🎉</div><h2 style="color:#0a9150">আপনার অর্ডারটি সফল হয়েছে!</h2><p style="color:#555">পেমেন্ট ভেরিফাই করে কিছুক্ষণের মধ্যেই আপনার জিমেইলে প্রিমিয়াম লিংক পাঠিয়ে দেওয়া হবে। অ্যাপটি Inbox/Span এ দেখুন। ধন্যবাদ!</p></div>';
   bar.classList.add('hide');})
  .catch(function(){alert('দুঃখিত! ডাটা পাঠানো যায়নি। ইন্টারনেট চেক করে আবার চেষ্টা করুন।');b.disabled=false;b.textContent='✅ অর্ডার কনফার্ম করুন'});
 });
