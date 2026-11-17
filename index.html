@@ -145,67 +145,98 @@ footer{text-align:center;color:var(--mut);font-size:.85rem;padding:16px 16px 10p
 <div class="toast" id="toast"></div>
 
 <script>
-// আপনার bKash QR কোড - এখানে আপনার QR কোডের base64 ডেটা দিন
-var QR="https://i.ibb.co.com/DfCW6zQb/bkash-new.jpg"; // অথবা base64 ডেটা
-var W={
- bkash:{n:'বিকাশ',num:'01722984756',img:QR,cls:''}
+// ১. বিকাশ পেমেন্ট ডেটা
+var QR = "https://i.ibb.co.com/DfCW6zQb/bkash-new.jpg"; 
+var W = {
+ bkash: { n: 'বিকাশ', num: '01722984756', img: QR, cls: '' }
 };
-var cur='bkash',$=function(i){return document.getElementById(i)};
-function toast(t){var e=$('toast');e.textContent=t;e.classList.add('s');setTimeout(function(){e.classList.remove('s')},1600)}
-function render(){
- var w=W[cur],p=$('pay');p.className='pay '+w.cls;
- p.innerHTML='<span class="amt">৯৯ টাকা Send Money</span><small>'+w.n+' পার্সোনাল নম্বর</small>'+
- '<div class="num"><b>'+w.num+'</b><button type="button" class="copy" data-c="'+w.num+'">কপি</button></div>'+
- (w.img?'<img src="'+w.img+'" alt="'+w.n+' QR"><small style="margin-top:6px">অ্যাপ দিয়ে QR স্ক্যান করে পেমেন্ট করুন</small>':'');
+var cur = 'bkash';
+var $ = function(i){ return document.getElementById(i) };
+
+// ২. টোস্ট মেসেজ দেখানোর ফাংশন
+function toast(t){
+  var e = $('toast');
+  if(!e) return;
+  e.textContent = t;
+  e.classList.add('s');
+  setTimeout(function(){ e.classList.remove('s') }, 1600);
 }
-$('pay').addEventListener('click',function(e){
- var c=e.target.dataset&&e.target.dataset.c;if(!c)return;
- (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(function(){toast('নম্বর কপি হয়েছে ✔')}).catch(function(){toast(c)});
+
+// ৩. পেমেন্ট বক্স রেন্ডার করার ফাংশন (এটাই মিসিং বা ব্লকড ছিল)
+function render(){
+  var w = W[cur], p = $('pay');
+  if(!p) return;
+  p.className = 'pay ' + w.cls;
+  p.innerHTML = '<span class="amt">৯৯ টাকা Send Money</span><small>' + w.n + ' পার্সোনাল নম্বর</small>' +
+  '<div class="num"><b>' + w.num + '</b><button type="button" class="copy" data-c="' + w.num + '">কপি</button></div>' +
+  (w.img ? '<img src="' + w.img + '" alt="' + w.n + ' QR"><small style="margin-top:6px">অ্যাপ দিয়ে QR স্ক্যান করে পেমেন্ট করুন</small>' : '');
+}
+
+// ৪. নম্বর কপি করার ইভেন্ট
+$('pay').addEventListener('click', function(e){
+  var c = e.target.dataset && e.target.dataset.c;
+  if(!c) return;
+  (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject())
+    .then(function(){ toast('নম্বর কপি হয়েছে ✔') })
+    .catch(function(){ toast(c) });
 });
+
+// রেন্ডার ফাংশনটি কল করা হলো (বক্সটি শো করার জন্য)
 render();
 
-// hide sticky bar when the form is on screen
-var bar=$('bar');
-if('IntersectionObserver' in window){new IntersectionObserver(function(a){bar.classList.toggle('hide',a[0].isIntersecting)},{threshold:.15}).observe($('order-form'))}
+// ৫. ফর্মের অন্যান্য ইভেন্ট
+var bar = $('bar');
+if('IntersectionObserver' in window && bar && $('order-form')){
+  new IntersectionObserver(function(a){
+    bar.classList.toggle('hide', a[0].isIntersecting)
+  }, {threshold: .15}).observe($('order-form'));
+}
 
-$('phone').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'')});
-$('trx').addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/\s/g,'')});
+$('phone').addEventListener('input', function(){ this.value = this.value.replace(/\D/g, '') });
+$('trx').addEventListener('input', function(){ this.value = this.value.toUpperCase().replace(/\s/g, '') });
 
-$('f').addEventListener('submit',function(e){
- e.preventDefault();
- var d={name:$('name').value.trim(),email:$('email').value.trim(),phone:$('phone').value.trim(),trx:$('trx').value.trim()};
- if(!d.name)return toast('নাম লিখুন'),$('name').focus();
- if(!/^\S+@\S+\.\S+$/.test(d.email))return toast('সঠিক জিমেইল দিন'),$('email').focus();
- if(!/^01[3-9]\d{8}$/.test(d.phone))return toast('সঠিক মোবাইল নম্বর দিন'),$('phone').focus();
- if(d.trx.length<6)return toast('সঠিক TrxID দিন'),$('trx').focus();
- var b=$('sb');b.disabled=true;b.textContent='⏳ প্রসেসিং হচ্ছে...';
-fetch('https://rpl2.app.n8n.cloud/webhook/winteraura-order', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    name: d.name,
-    email: d.email,
-    phone: d.phone,
-    payment_method: cur,
-    transaction_id: d.trx,
-    submitted_at: new Date().toLocaleString('en-US', {timeZone: 'Asia/Dhaka'})
+// ৬. ফর্ম সাবমিট ও n8n Webhook এ ডাটা পাঠানো
+$('f').addEventListener('submit', function(e){
+  e.preventDefault();
+  var d = {
+    name: $('name').value.trim(),
+    email: $('email').value.trim(),
+    phone: $('phone').value.trim(),
+    trx: $('trx').value.trim()
+  };
+  
+  if(!d.name) return toast('নাম লিখুন'), $('name').focus();
+  if(!/^\S+@\S+\.\S+$/.test(d.email)) return toast('সঠিক জিমেইল দিন'), $('email').focus();
+  if(!/^01[3-9]\d{8}$/.test(d.phone)) return toast('সঠিক মোবাইল নম্বর দিন'), $('phone').focus();
+  if(d.trx.length < 6) return toast('সঠিক TrxID দিন'), $('trx').focus();
+  
+  var b = $('sb');
+  b.disabled = true;
+  b.textContent = '⏳ প্রসেসিং হচ্ছে...';
+  
+  fetch('https://rpl2.app.n8n.cloud/webhook/winteraura-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: d.name,
+      email: d.email,
+      phone: d.phone,
+      payment_method: cur,
+      transaction_id: d.trx,
+      submitted_at: new Date().toLocaleString('en-US', {timeZone: 'Asia/Dhaka'})
+    })
   })
-})
-.then(function(r){
-  if(!r.ok) throw new Error('সার্ভার এরর: ' + r.status); // throw 0 এর বদলে সঠিক এরর মেসেজ
-  
-  $('order-form').innerHTML='<div class="ok"><div class="t">🎉</div><h2 style="color:#0a9150">আপনার অর্ডারটি সফল হয়েছে!</h2><p style="color:#555">পেমেন্ট ভেরিফাই করে কিছুক্ষণের মধ্যেই আপনার জিমেইলে প্রিমিয়াম লিংক পাঠিয়ে দেওয়া হবে। অ্যাপটি Inbox/Span এ দেখুন। ধন্যবাদ!</p></div>';
-  bar.classList.add('hide');
-})
-.catch(function(error){
-  // এররটি ব্রাউজার কনসোলে দেখানোর জন্য
-  console.error('Webhook Error Details:', error); 
-  
-  alert('দুঃখিত! ডাটা পাঠানো যায়নি। ইন্টারনেট চেক করে আবার চেষ্টা করুন।');
-  b.disabled = false;
-  b.textContent = '✅ অর্ডার কনফার্ম করুন';
+  .then(function(r){
+    if(!r.ok) throw new Error('Network response was not ok: ' + r.status);
+    $('order-form').innerHTML = '<div class="ok"><div class="t">🎉</div><h2 style="color:#0a9150">আপনার অর্ডারটি সফল হয়েছে!</h2><p style="color:#555">পেমেন্ট ভেরিফাই করে কিছুক্ষণের মধ্যেই আপনার জিমেইলে প্রিমিয়াম লিংক পাঠিয়ে দেওয়া হবে। অ্যাপটি Inbox/Spam এ দেখুন। ধন্যবাদ!</p></div>';
+    if(bar) bar.classList.add('hide');
+  })
+  .catch(function(error){
+    console.error('Webhook Error Details:', error);
+    alert('দুঃখিত! ডাটা পাঠানো যায়নি। ইন্টারনেট চেক করে আবার চেষ্টা করুন।');
+    b.disabled = false;
+    b.textContent = '✅ অর্ডার কনফার্ম করুন';
+  });
 });
 </script>
 </body>
