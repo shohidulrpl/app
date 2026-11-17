@@ -228,7 +228,7 @@ $('f').addEventListener('submit', function(e){
   })
   .then(function(r){
     if(!r.ok) throw new Error('Network response was not ok: ' + r.status);
-    $('order-form').innerHTML = '<div class="ok"><div class="t">🎉</div><h2 style="color:#0a9150">আপনার অর্ডারটি সফল হয়েছে!</h2><p style="color:#555">পেমেন্ট ভেরিফাই করে কিছুক্ষণের মধ্যেই আপনার জিমেইলে প্রিমিয়াম লিংক পাঠিয়ে দেওয়া হবে। অ্যাপটি Inbox/Spam এ দেখুন। ধন্যবাদ!</p></div>';
+    $('order-form').innerHTML = '<div class="ok"><div class="t">🎉</div><h2 style="color:#0a9150">আপনার অর্ডারটি সফল হয়েছে!</h2><p style="color:#555">পেমেন্ট ভেরিফাই করে কিছুক্ষণের মধ্যেই আপনার জিমেইলে প্রিমিয়াম লিংক পাঠিয়ে দেওয়া হবে। <b>অ্যাপটি Inbox/Spam এ দেখুন।</b> ধন্যবাদ!</p></div>';
     if(bar) bar.classList.add('hide');
   })
   .catch(function(error){
